@@ -3,12 +3,12 @@ package v1
 import (
 	"gin-blog/models"
 	"gin-blog/pkg/e"
+	"gin-blog/pkg/logging"
 	"gin-blog/pkg/setting"
 	"gin-blog/pkg/util"
 	"github.com/Unknwon/com"
 	"github.com/astaxie/beego/validation"
 	"github.com/gin-gonic/gin"
-	"log"
 	"net/http"
 )
 
@@ -17,8 +17,7 @@ func GetArticle(c *gin.Context) {
 
 	id := com.StrTo(c.Param("id")).MustInt()
 	valid := validation.Validation{}
-	valid.Required(id, "id").Message("id不能为空")
-	valid.Min(id, 0, "id").Message("id不能为0")
+	valid.Min(id, 1, "id").Message("id不能为0")
 	code := e.INVALID_PARAMS
 
 	var data interface{}
@@ -35,7 +34,7 @@ func GetArticle(c *gin.Context) {
 
 	} else {
 		for _, err := range valid.Errors {
-			log.Println(err.Key, err.Message)
+			logging.Info(err.Key, err.Message)
 		}
 	}
 	c.JSON(http.StatusOK, gin.H{"code": code, "msg": e.GetMsg(code), "data": data})
@@ -91,7 +90,7 @@ func AddArticle(c *gin.Context) {
 		code = e.SUCCESS
 	} else {
 		for _, err := range valid.Errors {
-			log.Println(err.Key, err.Message)
+			logging.Info(err.Key, err.Message)
 		}
 	}
 	c.JSON(http.StatusOK, gin.H{"code": code, "msg": e.GetMsg(code)})
@@ -100,9 +99,76 @@ func AddArticle(c *gin.Context) {
 //编辑文章
 func EditArticle(c *gin.Context) {
 
+	id := com.StrTo(c.Param("id")).MustInt()
+	modifiedBy := c.Query("modifiedBy")
+	valid := validation.Validation{}
+
+	data := make(map[string]interface{})
+
+	if arg := c.Query("tagId"); arg != "" {
+		tagId := com.StrTo(arg).MustInt()
+		data["tagId"] = tagId
+		data["modifiedBy"] = modifiedBy
+	}
+
+	if desc := c.Query("desc"); desc != "" {
+		data["desc"] = desc
+		data["modifiedBy"] = modifiedBy
+	}
+
+	if title := c.Query("title"); title != "" {
+		data["title"] = title
+		data["modifiedBy"] = modifiedBy
+	}
+
+	if content := c.Query("content"); content != "" {
+		data["content"] = content
+		data["modifiedBy"] = modifiedBy
+	}
+
+	if arg := c.Query("state"); arg != "" {
+		state := com.StrTo(arg).MustInt()
+		valid.Range(state, 0, 1, "state").Message("文章状态必须在0-1")
+		data["state"] = state
+	}
+
+	valid.Min(id, 1, "id").Message("id不能小于0")
+	valid.Required(modifiedBy, "modifiedBy").Message("修改人不能为空")
+
+	code := e.INVALID_PARAMS
+	if !valid.HasErrors() {
+		if models.ExisArticleById(id) {
+			models.EditArticle(id, data)
+			code = e.SUCCESS
+		} else {
+			code = e.ERROR_NOT_EXIST_TAG
+		}
+	} else {
+		for _, err := range valid.Errors {
+			logging.Info(err.Key, err.Message)
+		}
+	}
+	c.JSON(http.StatusOK, gin.H{"code": code, "msg": e.GetMsg(code)})
 }
 
 //删除文章
 func DeleteArtircle(c *gin.Context) {
+	id := com.StrTo(c.Param("id")).MustInt()
+	valid := validation.Validation{}
+	valid.Min(id, 1, "id").Message("id不能小于0")
+	code := e.INVALID_PARAMS
+	if !valid.HasErrors() {
+		if models.ExisArticleById(id) {
+			models.DeleteArticle(id)
+			code = e.SUCCESS
+		} else {
+			code = e.ERROR_NOT_EXIST_TAG
+		}
 
+	} else {
+		for _, err := range valid.Errors {
+			logging.Info(err.Key, err.Message)
+		}
+	}
+	c.JSON(http.StatusOK, gin.H{"code": code, "msg": e.GetMsg(code)})
 }

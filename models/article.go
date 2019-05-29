@@ -70,5 +70,5 @@ func (article *Article) BeforeCreate(scope *gorm.Scope) {
 }
 
 func (article *Article) BeforeUpdate(scope *gorm.Scope) {
-	scope.SetColumn("ModifiedBy", time.Now().Unix())
+	scope.SetColumn("ModifiedOn", time.Now().Unix())
 }
