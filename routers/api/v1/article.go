@@ -50,7 +50,7 @@ func GetArticles(c *gin.Context) {
 		state := com.StrTo(arg)
 		maps["state"] = state
 	}
-	articles := models.GetArticles(util.GetPage(c), setting.PageSize, maps)
+	articles := models.GetArticles(util.GetPage(c), setting.AppSetting.PageSize, maps)
 	total := models.GetArticleTotal(maps)
 	data["list"] = articles
 	data["total"] = total

@@ -72,3 +72,8 @@ func (article *Article) BeforeCreate(scope *gorm.Scope) {
 func (article *Article) BeforeUpdate(scope *gorm.Scope) {
 	scope.SetColumn("ModifiedOn", time.Now().Unix())
 }
+
+func CleanAllArticle() bool {
+	db.Unscoped().Where("deleted_on != ?", 0).Delete(&Article{})
+	return true
+}

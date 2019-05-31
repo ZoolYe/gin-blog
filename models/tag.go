@@ -55,7 +55,7 @@ func ExistTagByName(name string) bool {
 //通过id判断是否存在
 func ExistTagById(id int) bool {
 	var tag Tag
-	db.Select("id", ).Where("id = ?", id).Find(&tag)
+	db.Select("id").Where("id = ?", id).Find(&tag)
 	if tag.ID > 0 {
 		return true
 	}
@@ -71,4 +71,9 @@ func (tag *Tag) BeforeCreate(scope *gorm.Scope) error {
 func (tag *Tag) BeforeUpdate(scope *gorm.Scope) error {
 	scope.SetColumn("ModifiedOn", time.Now().Unix())
 	return nil
+}
+
+func CleanAllTag() bool {
+	db.Unscoped().Where("deleted_on != ?", 0).Delete(&Tag{})
+	return true
 }
