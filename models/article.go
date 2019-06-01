@@ -7,14 +7,15 @@ import (
 
 type Article struct {
 	Model
-	TagID      int    `json:"tagId"`
-	Tag        Tag    `json:"tag"`
-	Title      string `json:"title"`
-	Desc       string `json:"desc"`
-	Content    string `json:"content"`
-	CreatedBy  string `json:"createdBy"`
-	ModifiedBy string `json:"modifiedBy"`
-	State      int    `json:"state"`
+	TagID         int    `json:"tagId"`
+	Tag           Tag    `json:"tag"`
+	Title         string `json:"title"`
+	Desc          string `json:"desc"`
+	Content       string `json:"content"`
+	State         int    `json:"state"`
+	CoverImageUrl string `json:"coverImageUrl"`
+	CreatedBy     string `json:"createdBy"`
+	ModifiedBy    string `json:"modifiedBy"`
 }
 
 func ExisArticleById(id int) bool {
@@ -50,12 +51,13 @@ func EditArticle(id int, data interface{}) bool {
 
 func AddArticle(data map[string]interface{}) bool {
 	db.Create(&Article{
-		TagID:     data["tagId"].(int),
-		Title:     data["title"].(string),
-		Desc:      data["desc"].(string),
-		Content:   data["content"].(string),
-		CreatedBy: data["createdBy"].(string),
-		State:     data["state"].(int),
+		TagID:         data["tagId"].(int),
+		Title:         data["title"].(string),
+		Desc:          data["desc"].(string),
+		Content:       data["content"].(string),
+		CreatedBy:     data["createdBy"].(string),
+		State:         data["state"].(int),
+		CoverImageUrl: data["coverImageUrl"].(string),
 	})
 	return true
 }

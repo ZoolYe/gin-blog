@@ -2,46 +2,40 @@ package logging
 
 import (
 	"fmt"
+	"gin-blog/pkg/file"
 	"gin-blog/pkg/setting"
-	"log"
 	"os"
 	"time"
 )
 
 func getLogFilePath() string {
-	return fmt.Sprintf("%s", setting.AppSetting.LogSavePath)
+	return fmt.Sprintf("%s%s", setting.AppSetting.RuntimeRootPath, setting.AppSetting.LogSavePath)
 }
 
-func getLogFileFullPath() string {
-	prefixPath := getLogFilePath()
-	suffixPath := fmt.Sprintf("%s%s.%s", setting.AppSetting.LogSaveName, time.Now().Format(setting.AppSetting.TimeFormat), setting.AppSetting.LogFileExt)
-	return fmt.Sprintf("%s%s", prefixPath, suffixPath)
+func getLogFileName() string {
+	return fmt.Sprintf("%s%s.%s",
+		setting.AppSetting.LogSaveName,
+		time.Now().Format(setting.AppSetting.TimeFormat),
+		setting.AppSetting.LogFileExt)
 }
 
-func openLogFile(filePath string) *os.File {
-	_, err := os.Stat(filePath)
-	switch {
-	case os.IsNotExist(err):
-		mkDir(getLogFilePath())
-	case os.IsPermission(err):
-		log.Fatalf("Permission :%v", err)
-	}
-	//os.O_APPEND 在写入时将数据追加到文件中
-	//os.O_CREATE 如果不存在，则创建一个新文件
-	//os.O_WRONLY 以只写模式打开文件
-	handle, err := os.OpenFile(filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+func openLogFile(fileName, filePath string) (*os.File, error) {
+	dir, err := os.Getwd()
 	if err != nil {
-		log.Fatalf("Fail to OpenFile :%v", err)
+		return nil, fmt.Errorf("os.Getwd err: %v", err)
 	}
-	return handle
-}
-
-func mkDir(path string) {
-	//返回与当前目录对应的根路径名
-	dir, _ := os.Getwd()
-	//创建对应的目录以及所需的子目录，若成功则返回`nil`，否则返回`error`
-	err := os.MkdirAll(dir+"/"+path, os.ModePerm)
+	src := dir + "/" + filePath
+	perm := file.CheckPermission(src)
+	if perm == true {
+		return nil, fmt.Errorf("file.CheckPermission Permission denied src: %s", src)
+	}
+	err = file.IsNotExistMkDir(src)
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("file.IsNotExistMkDir src: %s, err: %v", src, err)
 	}
+	f, err := file.Open(src+fileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0604)
+	if err != nil {
+		return nil, fmt.Errorf("Fail to OpenFile :%v", err)
+	}
+	return f, nil
 }

@@ -67,6 +67,7 @@ func AddArticle(c *gin.Context) {
 	content := c.Query("content")
 	createdBy := c.Query("createdBy")
 	state := com.StrTo(c.DefaultQuery("state", com.StrTo(1).String())).MustInt()
+	coverImageUrl := c.Query("coverImageUrl")
 
 	valid := validation.Validation{}
 	valid.Min(tagId, 1, "tagId").Message("标签ID必须大于0")
@@ -75,6 +76,7 @@ func AddArticle(c *gin.Context) {
 	valid.Required(content, "content").Message("文章内容不能为空")
 	valid.Required(createdBy, "createdBy").Message("文章作者不能为空")
 	valid.Range(state, 0, 1, "state").Message("文章状态必须在0-1")
+	valid.Required(coverImageUrl, "coverImageUrl").Message("文章图片不能为空")
 
 	code := e.INVALID_PARAMS
 
@@ -86,6 +88,7 @@ func AddArticle(c *gin.Context) {
 		data["content"] = content
 		data["createdBy"] = createdBy
 		data["state"] = state
+		data["coverImageUrl"] = coverImageUrl
 		models.AddArticle(data)
 		code = e.SUCCESS
 	} else {
@@ -130,6 +133,11 @@ func EditArticle(c *gin.Context) {
 		state := com.StrTo(arg).MustInt()
 		valid.Range(state, 0, 1, "state").Message("文章状态必须在0-1")
 		data["state"] = state
+	}
+
+	if coverImageUrl := c.Query("coverImageUrl"); coverImageUrl != "" {
+		data["coverImageUrl"] = coverImageUrl
+		data["modifiedBy"] = modifiedBy
 	}
 
 	valid.Min(id, 1, "id").Message("id不能小于0")

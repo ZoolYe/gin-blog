@@ -24,5 +24,6 @@ nbdist/
 .nb-gradle/
 
 ### Golang ###
+/runtime/*
 *.exe
 *.log
