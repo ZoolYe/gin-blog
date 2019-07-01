@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"gin-blog/models"
+	"gin-blog/pkg/gredis"
 	"gin-blog/pkg/logging"
 	"gin-blog/pkg/setting"
 	"gin-blog/routers"
@@ -19,6 +20,7 @@ func main() {
 	setting.Setup()
 	models.Setup()
 	logging.Setup()
+	gredis.Setup()
 
 	router := routers.InitRouter()
 	s := &http.Server{
