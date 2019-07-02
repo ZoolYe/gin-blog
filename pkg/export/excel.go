@@ -2,6 +2,8 @@ package export
 
 import "gin-blog/pkg/setting"
 
+const EXT = ".xlsx"
+
 func GetExcelFullUrl(name string) string {
 	return setting.AppSetting.PrefixUrl + "/" + GetExcelPath() + name
 }
